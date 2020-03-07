@@ -1,0 +1,12 @@
+{
+        "type": "mongodb",
+        "host": "localhost",
+        "port": 27017,
+        "username": "test",
+        "password": "test",
+        "database": "api",
+        "entities": [
+                "**/*.entity.ts,src/**/*.entity.ts"
+        ],
+        "synchronize": true
+}
