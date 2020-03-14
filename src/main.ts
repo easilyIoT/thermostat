@@ -13,7 +13,7 @@ async function bootstrap() {
         
         LogRocket.init("phuvdi/easily-thermostat");
 
-        await app.listen(8000);
+        await app.listen(process.env.PORT);
 }
 
 
