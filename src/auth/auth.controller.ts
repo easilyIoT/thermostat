@@ -1,7 +1,9 @@
-import { Controller, Get, Query, Post, UsePipes, HttpCode, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Query, Post, HttpCode, BadRequestException, UseGuards } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import { JoiValidationPipe } from "../pipes/JoiValidationPipe.pipe"
+
+import { JWTGuard } from "../guards/JWTGuard.guard"
 
 import { AuthenticationService } from "./auth.service"
 import { OauthService } from './oauth.service';
@@ -34,12 +36,19 @@ export class AuthController {
                         throw new BadRequestException("Email already exists");
                 
                 
-                return await this.userService.create(email, await this.authService.cryptPassword(password));
+                const user = await this.userService.create(email, await this.authService.cryptPassword(password));
+
+                return {
+                        token: await this.authService.generateNewToken(user)
+                };
         }
         
         @Post("/login")
         @HttpCode(200)
-        async login(@Email() email: string, @Password() password: string) {
+        async login(
+                @Email() email: string,
+                @Password() password: string
+        ) {
                 const user: UserEntity | undefined = await this.userService.findOneWithEmail(email);
                 
                 if (!user)
@@ -56,9 +65,12 @@ export class AuthController {
                 };
         }
 
-        @Get("/login_status")
-        loginStatus(@User() user: UserEntity): boolean {
-                return !!user.refresh_token;
+        @Get("/user")
+        @UseGuards(JWTGuard)
+        loginStatus(@User() user: UserEntity) {
+                return {
+                        user
+                };
         }
         
         @Get("/callback")

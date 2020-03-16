@@ -5,13 +5,15 @@ config();
 
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import * as LogRocket from "logrocket"
+import * as helmet from "helmet"
 
 async function bootstrap() {
-
-	const app = await NestFactory.create(AppModule);
         
-        LogRocket.init("phuvdi/easily-thermostat");
+        const app = await NestFactory.create(AppModule);
+        app.enableCors();
+        app.use(helmet());
+
+        //LogRocket.init("phuvdi/easily-thermostat");
 
         await app.listen(process.env.PORT);
 }
