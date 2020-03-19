@@ -1,4 +1,4 @@
-import { Controller, Get, Query, Post, HttpCode, BadRequestException, UseGuards } from '@nestjs/common';
+import { Controller, Get, Query, Post, HttpCode, BadRequestException, UseGuards, Res } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import { JoiValidationPipe } from "../pipes/JoiValidationPipe.pipe"
@@ -14,6 +14,7 @@ import { User } from "../decorators/User.decorator";
 
 import { UserService } from '../user/user.service';
 import { User as UserEntity } from "../user/user.entity";
+import { Response } from 'express';
 
 @Controller('auth')
 export class AuthController {
@@ -73,14 +74,38 @@ export class AuthController {
                 };
         }
         
-        @Get("/callback")
-        async getCode(@Query("code") code: string) {
-                this.oauthService.exchangeCode(code);
+        @Post("/regenToken")
+        async regenAccessToken(@User() user: UserEntity) {
+                const access_token = await this.oauthService.getNewAuthToken(user.refresh_token);
 
+                await this.userService.saveNewAccessToken(user.id.toString(), access_token);
+        }
+
+        @Post("/generateState")
+        @UseGuards(JWTGuard)
+        generateState(@User() user: UserEntity) {
                 return {
-                        statusCode: 301,
-                        url: `${this.config.get<string>("frontend_url")}/login?$success=true`
-                }
+                        state: this.oauthService.genState(user)
+                };
+        }
+                
+        @Get("/callback")
+        async getCode(@Query("code") code: string, @Query("state") state: string, @Res() res: Response) {
+
+                if (this.authService.isTokenStillAlive(state))
+                        throw new BadRequestException("state expired");
+                
+                
+                const userID = this.authService.decodeToken(state)["user"];
+
+
+                const { access_token, refresh_token } = await this.oauthService.exchangeCode(code);
+
+                const user = await this.userService.completeRegistration(userID, access_token, refresh_token);
+
+                console.log(user);
+
+                res.redirect(`${this.config.get<string>("frontend_url")}/complete_registration?success=true`);
         }
 
 }

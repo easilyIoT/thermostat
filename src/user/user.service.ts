@@ -38,4 +38,17 @@ export class UserService {
                 })
                 return !!user;
         }
+
+        async completeRegistration(id: string, access_token: string, refresh_token: string) {
+                await this.repository.update(id, {
+                        access_token,
+                        refresh_token
+                });
+        }
+
+        async saveNewAccessToken(id: string, newToken: string) {
+                await this.repository.update(id, {
+                        access_token: newToken
+                })
+        }
 }
