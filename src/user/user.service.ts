@@ -51,4 +51,10 @@ export class UserService {
                         access_token: newToken
                 })
         }
+
+        async saveGroup(id: string, newGroup: string) {
+                await this.repository.update(id, {
+                        group: newGroup
+                });
+        }
 }

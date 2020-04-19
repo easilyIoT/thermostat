@@ -34,5 +34,14 @@ export class User {
         @Field({
                 nullable: true
         })
-        readonly access_token: string;
+        access_token: string;
+
+        @Column({
+                nullable: true,
+                update: true
+        })
+        @Field({
+                nullable: true
+        })
+        readonly group: string;
 }

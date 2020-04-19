@@ -5,6 +5,7 @@ import { sign } from "jsonwebtoken";
 
 import { OauthTokens, OauthTokenResponse } from './interfaces/token'; 
 import { User as UserEntity } from 'user/user.entity';
+import { OAuthServerError } from '../exceptions/OAuthServerError.exception';
 
 
 @Injectable()
@@ -15,16 +16,20 @@ export class OauthService {
 
         private readonly authorizationURL: string;
         private readonly tokenURL: string;
+        private readonly tokenValidationURL: string;
+
 
         constructor(
                 private readonly http: HttpService,
                 private readonly config: ConfigService
         ) { 
-                this.clientID = process.env.OAUTH_CLIENT_ID,
-                this.clientSecret = process.env.OAUTH_CLIENT_SECRET,
+                this.clientID = process.env.OAUTH_CLIENT_ID;
+                this.clientSecret = process.env.OAUTH_CLIENT_SECRET;
                         
-                this.authorizationURL = config.get<string>("authorization_url"),
-                this.tokenURL = config.get<string>("token_url")
+                this.authorizationURL = config.get<string>("authorization_url");
+                this.tokenURL = config.get<string>("token_url");
+                this.tokenValidationURL = config.get<string>("validation_url");
+                
         }
 
 
@@ -56,6 +61,23 @@ export class OauthService {
                 });
         }
 
+        async validateAuthToken(user: UserEntity) {
+                try {
+                        await this.http.post(`${this.tokenValidationURL}`, {}, {
+                                headers: {
+                                        Authorization: user.access_token
+                                }
+                        })
+                        return true;
+                } catch (e) {
+                        if (e.response && e.response.status === 401)
+                                return false
+                        else
+                                throw new OAuthServerError();
+                }
+                
+        }
+
         async getNewAuthToken(refresh_token: string): Promise<string> {
                 const { data } = await this.http.post<OauthTokenResponse>(`${this.tokenURL}`, {
                         grant_type: "refresh_token",
@@ -63,6 +85,21 @@ export class OauthService {
                 }).toPromise();
                 
                 return data.access_token;
+        }
+
+        async getGroup(user: UserEntity, token?: string) {
+                try {
+                        const { data } = await this.http.get(`${this.config.get("resource_server")}/api/group/${user.group}`, {
+                                headers: {
+                                        Authorization: token || user.access_token
+                                }
+                        }).toPromise();
+                        return data.group;
+
+                } catch (e) {
+                        if (e.response && e.response.status === 401)
+                                return this.getGroup(user, await this.getNewAuthToken(user.refresh_token));
+                }
         }
 
 

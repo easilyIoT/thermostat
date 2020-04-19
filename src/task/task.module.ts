@@ -1,23 +1,24 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from "@nestjs/typeorm"
 import { HttpModule } from "@nestjs/common"
 
-import { AuthModule } from "../auth/auth.module"
+import { AuthModule } from "auth/auth.module"
+import { UserModule } from 'user/user.module';
 
-import { TaskService } from "./task.service";
-import { TaskController } from './task.controller';
-import { Task } from "./task.entity";
-import { TaskResolver } from './task.resolver';
+import { TaskService } from "task/task.service";
+import { TaskController } from 'task/task.controller';
+import { Task } from "task/task.entity";
+import { TaskResolver } from 'task/task.resolver';
 
-import { DateScalar } from "../common/scalars/Date"
 
 @Module({
         imports: [
                 TypeOrmModule.forFeature([Task]),
                 HttpModule,
-                AuthModule
+                forwardRef(() => AuthModule),
+                forwardRef(() => UserModule)
         ],
         controllers: [TaskController],
-        providers: [TaskService, TaskResolver, DateScalar],
+        providers: [TaskService, TaskResolver],
 })
 export class TaskModule { }

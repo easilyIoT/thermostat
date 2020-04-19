@@ -21,12 +21,12 @@ export class TaskResolver {
         ) { }
 
         @Query(returns => [Task])
-        getTasks(@User() user: UserEntity): Promise<Task[]> {
+        tasks(@User() user: UserEntity): Promise<Task[]> {
                 return this.taskService.getTasks(user);
         }
 
         @Query(returns => Task)
-        getTask(
+        task(
                 @Args({ name: "id", type: () => ID }) id: string,
                 @User() user: UserEntity
         ): Promise<Task> {

@@ -23,19 +23,23 @@ export class TaskController {
         ) { }
         
         @Get()
-        findAll(@User() user: UserEntity): Promise<Task[]> {
-                return this.taskService.getTasks(user);
+        async findAll(@User() user: UserEntity) {
+                return {
+                        tasks: await this.taskService.getTasks(user) || []
+                };
         }
 
         @Post()
         @UsePipes(new JoiValidationPipe(createTaskSchema))
         create(@Body() task: CreateTaskDto, @User() user: UserEntity) {
-                return this.taskService.createTask(task, user);
+                this.taskService.createTask(task, user);
         }
 
         @Get(":id")
-        findOne(@Param("id") id: string, @User() user: UserEntity): Promise<Task> {
-                return this.taskService.getTask(id, user);
+        async findOne(@Param("id") id: string, @User() user: UserEntity) {
+                return {
+                        task: await this.taskService.getTask(id, user) || {}
+                }
         }
 
         @Put(":id")

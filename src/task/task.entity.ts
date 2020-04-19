@@ -1,13 +1,15 @@
 import { Entity, ObjectID, ObjectIdColumn, Column } from "typeorm"
 import { ObjectType, Field, ID } from "type-graphql"
 
+import { Time } from 'task/interfaces/time';
+
 
 @Entity()
 @ObjectType()
 export class Task {
         
         @ObjectIdColumn()
-        @Field(() => ID)
+        @Field(type => ID)
         id: ObjectID;
 
         @Column()
@@ -19,10 +21,14 @@ export class Task {
         owner: string;
 
         @Column()
-        @Field()
-        start: Date;
+        @Field(() => Time)
+        start: Time;
+
+        @Column()
+        @Field(() => Time)
+        done: Time;
 
         @Column()
         @Field()
-        done: Date;
+        daily: boolean;
 }

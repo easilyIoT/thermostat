@@ -1,4 +1,4 @@
-import { Module, HttpModule } from '@nestjs/common';
+import { Module, HttpModule, forwardRef } from '@nestjs/common';
 import { AuthenticationService } from "./auth.service"
 import { AuthController } from './auth.controller';
 import { AuthResolver } from './auth.resolver';
@@ -8,9 +8,12 @@ import { UserModule } from '../user/user.module';
 import { UserService } from '../user/user.service';
 
 @Module({
-        imports: [HttpModule, UserModule],
+        imports: [
+                HttpModule,
+                forwardRef(() => UserModule)
+        ],
         controllers: [AuthController],
         providers: [AuthResolver, AuthenticationService, OauthService],
-        exports: [AuthenticationService, OauthService, UserModule]
+        exports: [AuthenticationService, OauthService]
 })
 export class AuthModule {}

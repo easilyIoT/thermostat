@@ -3,14 +3,12 @@
 # !!!   DO NOT MODIFY THIS FILE BY YOURSELF   !!!
 # -----------------------------------------------
 
-input CreateTaskDto {
+input CreateTaskInput {
   name: String!
-  start: Date!
-  done: Date!
+  start: TimeInput!
+  done: TimeInput!
+  daily: Boolean!
 }
-
-"""implementation of Date scalar"""
-scalar Date
 
 input LoginInput {
   email: String!
@@ -18,16 +16,17 @@ input LoginInput {
 }
 
 type Mutation {
-  login(loginInput: LoginInput!): TokenResponse!
-  register(loginInput: RegisterInput!): User!
-  createTask(CreateTaskDto: CreateTaskDto!): Task!
+  login(password: String!, email: String!): TokenResponse!
+  register(password: String!, email: String!): User!
+  createTask(CreateTaskDto: CreateTaskInput!): Task!
 }
 
 type Query {
+  me: User!
   getUsers: [User!]!
   getUser(id: ID!): User!
-  getTasks: [Task!]!
-  getTask(id: ID!): Task!
+  tasks: [Task!]!
+  task(id: ID!): Task!
 }
 
 input RegisterInput {
@@ -35,16 +34,38 @@ input RegisterInput {
   password: String!
 }
 
+input SaveGroupDto {
+  group: String!
+}
+
 type Task {
   id: ID!
   name: String!
   owner: String!
-  start: Date!
-  done: Date!
+  start: Time!
+  done: Time!
+  daily: Boolean!
+}
+
+type Time {
+  hour: Int!
+  minute: Int!
+}
+
+input TimeInput {
+  hour: Int!
+  minute: Int!
 }
 
 type TokenResponse {
   token: String!
+}
+
+input UpdateTaskInput {
+  name: String!
+  start: TimeInput!
+  done: TimeInput!
+  daily: Boolean!
 }
 
 type User {
@@ -53,4 +74,5 @@ type User {
   password: String!
   refresh_token: String
   access_token: String
+  group: String
 }
