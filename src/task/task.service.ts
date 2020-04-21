@@ -56,7 +56,7 @@ export class TaskService {
 	}
 
 
-	@Cron(CronExpression.EVERY_30_SECONDS)
+	@Cron(CronExpression.EVERY_10_MINUTES)
 	async triggerTasks() {
 		console.log("Triggering tasks");
 
